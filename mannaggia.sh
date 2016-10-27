@@ -44,7 +44,7 @@ for parm in "$@"
 
 	# leggi dai parametri se c'e' da mandare i commenti su wall
 	if [ "$parm" = "--wall" ]
-		then 
+		then
 		wallflag=true
 	fi
 
@@ -88,9 +88,24 @@ done
 while [ "$nds" != 0 ]
 	do
 	# shellcheck disable=SC2019
-	MANNAGGIA="Mannaggia $(curl -s "www.santiebeati.it/$(</dev/urandom tr -dc A-Z|head -c1)/"|grep -a tit|cut -d'>' -f 4-9|shuf -n1 |awk -F "$DELSTRING1" '{print$1$2}'|awk -F "$DELSTRING2" '{print$1}')"
-	MANNAGGIAURL="http://www.ispeech.org/p/generic/getaudio?text=$MANNAGGIA%2C&voice=euritalianmale&speed=0&action=convert"
-	
+
+  case "$(uname -s)" in
+    Darwin)
+      MANNAGGIA="Mannaggia $(LC_CTYPE=C curl -s "www.santiebeati.it/$(LC_CTYPE=C </dev/urandom tr -dc A-Z|head -c1)/"|grep -a tit| LC_CTYPE=C cut -d'>' -f 4-9 | perl -MList::Util=shuffle -e 'print shuffle(<STDIN>);' |awk -F "$DELSTRING1" '{print$1$2}'|awk -F "$DELSTRING2" '{print$1}' | head -n 1)"
+      say -v Alice "$MANNAGGIA"
+    ;;
+
+    Linux)
+      MANNAGGIA="Mannaggia $(curl -s "www.santiebeati.it/$(</dev/urandom tr -dc A-Z|head -c1)/"|grep -a tit|cut -d'>' -f 4-9|shuf -n1 |awk -F "$DELSTRING1" '{print$1$2}'|awk -F "$DELSTRING2" '{print$1}')"
+      MANNAGGIAURL="http://www.ispeech.org/p/generic/getaudio?text=$MANNAGGIA%2C&voice=euritalianmale&speed=0&action=convert"
+		;;
+
+    *)
+      echo 'OS non supportato'
+      exit 1
+    ;;
+  esac
+
 	if [ "$wallflag" = true ]
 		then
 		pot=$(( nds % 50 ))
