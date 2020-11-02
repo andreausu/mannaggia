@@ -1,7 +1,7 @@
 mannaggia.sh
 =========
 
-Automatic saint invocation for depressed Veteran Unix Admins,
+Automatic saint invocation for depressed Veteran *nix Admins,
 
 it's developed in italian, it can be easily adapted in other languages.
 
@@ -18,6 +18,7 @@ parametri da command line:
 * --audio : attiva mplayer per fargli pronunciare i santi
 * --spm <n> : numero di santi per minuto
 * --wall : invia l'output a tutte le console : attenzione , se non siete root o sudoers disattivare il flag -n
+* --random : recupera un santo random
 
 Rilasciato sotto Licenza GNU-GPL v.3
 
