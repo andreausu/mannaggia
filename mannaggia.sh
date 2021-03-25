@@ -15,6 +15,7 @@
 # --spm <n> : numero di santi per minuto
 # --wall : invia l'output a tutte le console : attenzione , se non siete root o sudoers disattivare il flag -n
 # --nds <n> : numero di santi da invocare (di default continua all'infinito)
+# --random : recupera un santo random
 
 audioflag=false
 spm=1
@@ -27,6 +28,7 @@ DELSTRING1="</FONT>"
 DELSTRING2="</b>"
 DEFPLAYER="mplayer -really-quiet -ao alsa"
 PLAYER="${PLAYER:-$DEFPLAYER}"
+random=false
 
 # lettura parametri da riga comando
 for parm in "$@"
@@ -44,7 +46,7 @@ for parm in "$@"
 
 	# leggi dai parametri se c'e' da mandare i commenti su wall
 	if [ "$parm" = "--wall" ]
-		then 
+		then
 		wallflag=true
 	fi
 
@@ -83,14 +85,38 @@ for parm in "$@"
 		then
 		ndsflag=true
 	fi
+
+	if [ "$parm" = "--random" ]
+		then
+		random=true
+	fi
 done
 
 while [ "$nds" != 0 ]
 	do
 	# shellcheck disable=SC2019
-	MANNAGGIA="Mannaggia $(curl -s "www.santiebeati.it/$(</dev/urandom tr -dc A-Z|head -c1)/"|grep -a tit|cut -d'>' -f 4-9|shuf -n1 |awk -F "$DELSTRING1" '{print$1$2}'|awk -F "$DELSTRING2" '{print$1}')"
-	MANNAGGIAURL="http://www.ispeech.org/p/generic/getaudio?text=$MANNAGGIA%2C&voice=euritalianmale&speed=0&action=convert"
-	
+	if [ "$random" = true ]
+		then
+		MANNAGGIA="Mannaggia $(curl -s api.diostron.zone/random | jq '.summary')"
+	else
+		MANNAGGIA="Mannaggia $(curl -s api.diostron.zone/today | jq '.[0].summary')"
+	fi
+
+  case "$(uname -s)" in
+    Darwin)
+      say -v Alice "$MANNAGGIA"
+    ;;
+
+    Linux)
+      MANNAGGIAURL="http://www.ispeech.org/p/generic/getaudio?text=$MANNAGGIA%2C&voice=euritalianmale&speed=0&action=convert"
+		;;
+
+    *)
+      echo 'OS non supportato'
+      exit 1
+    ;;
+  esac
+
 	if [ "$wallflag" = true ]
 		then
 		pot=$(( nds % 50 ))
